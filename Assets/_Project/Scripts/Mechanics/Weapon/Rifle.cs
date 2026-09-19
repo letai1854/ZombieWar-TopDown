@@ -1,5 +1,4 @@
 using UnityEngine;
-using Cinemachine;
 
 public class Rifle : WeaponBase
 {
@@ -10,15 +9,11 @@ public class Rifle : WeaponBase
 
         if (muzzleFlash != null) muzzleFlash.Play();
 
-        GameObject bullet = ObjectPool.Instance.GetBullet();
+        GameObject bullet = ObjectPool.Instance != null ? ObjectPool.Instance.GetBullet() : null;
         if (bullet != null && firePoint != null)
         {
             bullet.transform.position = firePoint.position;
             bullet.transform.rotation = firePoint.rotation;
         }
-
-        GetComponentInParent<WeaponRecoil>()?.TriggerRecoil();
-        CinemachineImpulseSource impulse = GetComponent<CinemachineImpulseSource>();
-        if (impulse != null) impulse.GenerateImpulse();
     }
 }

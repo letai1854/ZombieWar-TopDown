@@ -38,7 +38,6 @@ public override void LogicUpdate()
         soldier.transform.rotation = Quaternion.Slerp(soldier.transform.rotation, targetRotation, soldier.RotateSpeed * Time.deltaTime);
     }
 
-    // Thực hiện di chuyển trực tiếp trong LogicUpdate bằng Time.deltaTime
     soldier.Controller.Move(moveDirection * soldier.MoveSpeed * inputMagnitude * Time.deltaTime);
 
     soldier.Animator.SetFloat(AnimData.SpeedHash, inputMagnitude, 0.15f, Time.deltaTime);
@@ -47,7 +46,6 @@ public override void LogicUpdate()
 public override void PhysicsUpdate()
 {
     base.PhysicsUpdate();
-    // Để trống hoặc bỏ hàm Controller.Move ở đây đi
 }
 
     public override void Exit()

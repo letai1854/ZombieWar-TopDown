@@ -1,5 +1,4 @@
 using UnityEngine;
-using Cinemachine;
 
 public class Shotgun : WeaponBase
 {
@@ -18,7 +17,7 @@ public class Shotgun : WeaponBase
         {
             for (int i = 0; i < pelletCount; i++)
             {
-                GameObject bullet = ObjectPool.Instance.GetBullet();
+                GameObject bullet = ObjectPool.Instance != null ? ObjectPool.Instance.GetBullet() : null;
                 if (bullet != null)
                 {
                     float randomAngle = Random.Range(-spreadAngle, spreadAngle);
@@ -28,9 +27,5 @@ public class Shotgun : WeaponBase
                 }
             }
         }
-
-        GetComponentInParent<WeaponRecoil>()?.TriggerRecoil();
-        CinemachineImpulseSource impulse = GetComponent<CinemachineImpulseSource>();
-        if (impulse != null) impulse.GenerateImpulse();
     }
 }
