@@ -3,10 +3,11 @@ using UnityEngine;
 
 public class ObjectPool : MonoBehaviour
 {
-    public static ObjectPool Instance;
+    public static ObjectPool Instance { get; private set; }
 
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private int poolSize = 30;
+
     private List<GameObject> bulletPool;
 
     private void Awake()
@@ -32,11 +33,12 @@ public class ObjectPool : MonoBehaviour
         {
             if (!obj.activeInHierarchy)
             {
-                obj.SetActive(true);
-                return obj;
+                return obj; 
             }
         }
+
         GameObject newObj = Instantiate(bulletPrefab);
+        newObj.SetActive(false);
         bulletPool.Add(newObj);
         return newObj;
     }

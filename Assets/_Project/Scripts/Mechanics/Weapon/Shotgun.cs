@@ -1,31 +1,57 @@
+using System.Collections;
 using UnityEngine;
 
 public class Shotgun : WeaponBase
 {
-    [Header("Shotgun Settings")]
-    [SerializeField] private int pelletCount = 5;
-    [SerializeField] private float spreadAngle = 8f;
+    [Header("Shotgun Burst Settings")]
+    [SerializeField] private int pelletsPerShot = 3;   
+    [SerializeField] private float spreadAngle = 10f;  
+    [SerializeField] private int burstCount = 3;     
+    [SerializeField] private float burstDelay = 0.08f;  
+    [Header("Adjust Direction")]
+    [SerializeField] private Vector3 rotationOffset = Vector3.zero;
+
+    private bool isFiring = false;
 
     public override void Fire()
     {
-        if (Time.time < nextFireTime) return;
+        if (Time.time < nextFireTime || isFiring) return;
         nextFireTime = Time.time + fireRate;
 
-        if (muzzleFlash != null) muzzleFlash.Play();
+        StartCoroutine(FireBurstRoutine());
+    }
 
-        if (firePoint != null)
+    private IEnumerator FireBurstRoutine()
+    {
+        isFiring = true;
+
+        for (int b = 0; b < burstCount; b++)
         {
-            for (int i = 0; i < pelletCount; i++)
+            if (muzzleFlash != null) muzzleFlash.Play();
+
+            if (firePoint != null)
             {
-                GameObject bullet = ObjectPool.Instance != null ? ObjectPool.Instance.GetBullet() : null;
-                if (bullet != null)
+                float currentYAngle = firePoint.eulerAngles.y;
+
+                float[] angles = { -spreadAngle, 0f, spreadAngle };
+
+                for (int i = 0; i < pelletsPerShot; i++)
                 {
-                    float randomAngle = Random.Range(-spreadAngle, spreadAngle);
-                    Quaternion rot = firePoint.rotation * Quaternion.Euler(0, randomAngle, 0);
-                    bullet.transform.position = firePoint.position;
-                    bullet.transform.rotation = rot;
+                    GameObject bullet = ObjectPool.Instance != null ? ObjectPool.Instance.GetBullet() : null;
+                    if (bullet != null)
+                    {
+                        Quaternion rot = Quaternion.Euler(0f, currentYAngle + angles[i], 0f) * Quaternion.Euler(rotationOffset);
+
+                        bullet.transform.position = firePoint.position;
+                        bullet.transform.rotation = rot;
+                        bullet.SetActive(true);
+                    }
                 }
             }
+
+            yield return new WaitForSeconds(burstDelay);
         }
+
+        isFiring = false;
     }
 }
