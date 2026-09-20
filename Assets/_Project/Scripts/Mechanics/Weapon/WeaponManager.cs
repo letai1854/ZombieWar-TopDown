@@ -10,11 +10,16 @@ public class WeaponManager : MonoBehaviour
     [SerializeField] private Animator animator;
     
     private int currentWeaponIndex = 0;
+    private Soldier soldier;
 
     public WeaponBase CurrentWeapon => weapons.Count > 0 ? weapons[currentWeaponIndex] : null;
 
     private void Start()
     {
+        // Tự động tìm reference đến Soldier để check các trạng thái khóa (như ném bom)
+        soldier = GetComponentInParent<Soldier>();
+        if (soldier == null) soldier = FindObjectOfType<Soldier>();
+
         if (weapons.Count > 0) EquipWeapon(0);
     }
 
@@ -38,6 +43,13 @@ public class WeaponManager : MonoBehaviour
 
     public void SwitchWeapon()
     {
+        // Tuyệt đối không cho phép đổi súng nếu đang ném bom (để tránh lỗi deactive súng giữa chừng)
+        if (soldier != null && soldier.IsThrowingBomb)
+        {
+            Debug.LogWarning("[WEAPON] Không thể đổi súng lúc này vì đang ném bom!");
+            return;
+        }
+
         if (weapons.Count <= 1) return;
         currentWeaponIndex = (currentWeaponIndex + 1) % weapons.Count;
         EquipWeapon(currentWeaponIndex);

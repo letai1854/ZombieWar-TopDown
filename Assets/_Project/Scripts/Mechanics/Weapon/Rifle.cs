@@ -5,10 +5,18 @@ public class Rifle : WeaponBase
 {
     [Header("Adjust Direction")]
     [SerializeField] private Vector3 rotationOffset = Vector3.zero;
+    [SerializeField] private Vector3 muzzleFlashPositionOffset = Vector3.zero;
+    [SerializeField] private Vector3 muzzleFlashRotationOffset = Vector3.zero;
 
     [Header("Equip Settings")]
     [SerializeField] private float equipDelay = 0.5f; 
     private System.Collections.Generic.List<GameObject> activeFlashes = new System.Collections.Generic.List<GameObject>();
+    private WeaponRecoil weaponRecoil;
+
+    private void Awake()
+    {
+        weaponRecoil = GetComponentInChildren<WeaponRecoil>();
+    }
 
     private void OnEnable()
     {
@@ -80,8 +88,8 @@ public class Rifle : WeaponBase
         {
             activeFlashes.Add(flashObj); 
 
-            flashObj.transform.position = firePoint.position;
-            flashObj.transform.rotation = firePoint.rotation;
+            flashObj.transform.position = firePoint.position + firePoint.rotation * muzzleFlashPositionOffset;
+            flashObj.transform.rotation = firePoint.rotation * Quaternion.Euler(muzzleFlashRotationOffset);
             flashObj.SetActive(true);
             
             ParticleSystem ps = flashObj.GetComponent<ParticleSystem>();
@@ -91,6 +99,11 @@ public class Rifle : WeaponBase
                 ps.Play();
             }
 
+            // Gọi hiệu ứng giật súng và rung màn hình đồng bộ với tia lửa
+            if (weaponRecoil != null)
+            {
+                weaponRecoil.TriggerRecoil();
+            }
 
             yield return new WaitForSeconds(0.1f);
 

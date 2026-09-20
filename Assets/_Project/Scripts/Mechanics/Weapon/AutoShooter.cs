@@ -21,9 +21,18 @@ public class AutoShooter : MonoBehaviour
     private float currentSpineYaw = 0f;
     private float targetSpineYaw = 0f;
     private Tween aimTween;
+    private Soldier soldier;
+
+    private void Start()
+    {
+        soldier = GetComponent<Soldier>();
+    }
 
     private void Update()
     {
+        // Nếu đang ném bom thì tuyệt đối KHÔNG quét quái và KHÔNG bắn đạn
+        if (soldier != null && soldier.IsThrowingBomb) return;
+
         FindClosestEnemyInFOV();
         
         // CẬP NHẬT GÓC XOAY NGAY TRONG UPDATE ĐỂ TRÁNH TRỄ 1 FRAME
@@ -88,7 +97,6 @@ public class AutoShooter : MonoBehaviour
                 float angleToTarget = Vector3.SignedAngle(transform.forward, dirToTarget, Vector3.up);
                 float newTargetYaw = Mathf.Clamp(angleToTarget, -fieldOfView / 2f, fieldOfView / 2f);
                 
-                // Nếu mục tiêu di chuyển đáng kể, cập nhật DOTween
                 if (Mathf.Abs(targetSpineYaw - newTargetYaw) > 1f)
                 {
                     targetSpineYaw = newTargetYaw;

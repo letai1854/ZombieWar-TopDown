@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: d8721a8cbe184ed44a8c71dd91b33dba
+guid: 11633cde49783ac43ac5703bee9580cf
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -140,9 +140,8 @@ TextureImporter:
   assetBundleVariant: 
 AssetOrigin:
   serializedVersion: 1
-  productId: 340690
-  packageName: Human Soldier Animations FREE
+  productId: 345572
+  packageName: Human Throwing Animations FREE
   packageVersion: 1.0
-  assetPath: Assets/Plugins/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human
-    Basic Motions/Textures/HumanAnimations_ColorPalette.png
-  uploadId: 825260
+  assetPath: Assets/Plugins/Unity Demo Scenes/Human Basic Motions/Textures/HumanAnimations_ColorPalette.png
+  uploadId: 825318

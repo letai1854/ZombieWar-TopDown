@@ -21,6 +21,9 @@ public class ObjectPool : MonoBehaviour
     [SerializeField] private int muzzleFlashPoolSize = 10;
     private List<GameObject> muzzleFlashPool;
 
+    // Dictionary để Pool bất kỳ Prefab nào truyền vào (hỗ trợ nhiều loại hạt nổ khác nhau)
+    private Dictionary<GameObject, List<GameObject>> genericPool = new Dictionary<GameObject, List<GameObject>>();
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -129,5 +132,44 @@ public class ObjectPool : MonoBehaviour
         }
 
         return selectedObj;
+    }
+
+    // Hàm Pool đa năng: Tự động tạo và quản lý Pool cho bất kỳ Prefab nào (rất tiện cho Bomb và VFX)
+    public GameObject GetFromPool(GameObject prefab)
+    {
+        if (prefab == null) return null;
+
+        if (!genericPool.ContainsKey(prefab))
+        {
+            genericPool[prefab] = new List<GameObject>();
+        }
+
+        foreach (var obj in genericPool[prefab])
+        {
+            if (!obj.activeInHierarchy)
+            {
+                return obj;
+            }
+        }
+
+        GameObject newObj = Instantiate(prefab);
+        newObj.SetActive(false);
+        genericPool[prefab].Add(newObj);
+        return newObj;
+    }
+
+    // Tiện ích: Đưa Object về Pool (Tắt đi) sau một khoảng thời gian
+    public void ReturnToPool(GameObject obj, float delay)
+    {
+        if (obj != null && gameObject.activeInHierarchy)
+        {
+            StartCoroutine(ReturnRoutine(obj, delay));
+        }
+    }
+
+    private IEnumerator ReturnRoutine(GameObject obj, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (obj != null) obj.SetActive(false);
     }
 }

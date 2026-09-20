@@ -10,12 +10,13 @@ public class Shotgun : WeaponBase
 
     [Header("Equip Settings")]
     [SerializeField] private float equipDelay = 0.5f; 
-
     private System.Collections.Generic.List<GameObject> activeFlashes = new System.Collections.Generic.List<GameObject>();
+    private WeaponRecoil weaponRecoil;
 
     private void Awake()
     {
         fireRate = 0.35f;
+        weaponRecoil = GetComponentInChildren<WeaponRecoil>();
     }
 
     private void OnEnable()
@@ -98,6 +99,12 @@ public class Shotgun : WeaponBase
             {
                 ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
                 ps.Play();
+            }
+
+            // Gọi hiệu ứng giật súng và rung màn hình đồng bộ với tia lửa
+            if (weaponRecoil != null)
+            {
+                weaponRecoil.TriggerRecoil();
             }
 
             yield return new WaitForSeconds(0.1f);
