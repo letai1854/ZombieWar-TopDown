@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Rifle : WeaponBase
@@ -5,23 +6,105 @@ public class Rifle : WeaponBase
     [Header("Adjust Direction")]
     [SerializeField] private Vector3 rotationOffset = Vector3.zero;
 
+    [Header("Equip Settings")]
+    [SerializeField] private float equipDelay = 0.5f; 
+    private System.Collections.Generic.List<GameObject> activeFlashes = new System.Collections.Generic.List<GameObject>();
+
+    private void OnEnable()
+    {
+        nextFireTime = Time.time + equipDelay;
+    }
+
+    private void OnDisable()
+    {
+        nextFireTime = 0f; 
+        StopAllCoroutines();
+
+        foreach (var flash in activeFlashes)
+        {
+            if (flash != null)
+            {
+                ParticleSystem ps = flash.GetComponent<ParticleSystem>();
+                if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                flash.SetActive(false);
+            }
+        }
+        activeFlashes.Clear();
+    }
+
     public override void Fire()
     {
         if (Time.time < nextFireTime) return;
         nextFireTime = Time.time + fireRate;
 
-        if (muzzleFlash != null) muzzleFlash.Play();
-
-        GameObject bullet = ObjectPool.Instance != null ? ObjectPool.Instance.GetBullet() : null;
-        if (bullet != null && firePoint != null)
+        if (firePoint != null)
         {
-            float currentYAngle = firePoint.eulerAngles.y;
-            Quaternion flatRotation = Quaternion.Euler(0f, currentYAngle, 0f) * Quaternion.Euler(rotationOffset);
+            GameObject bullet = ObjectPool.Instance != null ? ObjectPool.Instance.GetBullet() : null;
+            bool bulletSpawned = false;
 
-            bullet.transform.position = firePoint.position;
-            bullet.transform.rotation = flatRotation;
+            if (bullet != null)
+            {
+                Vector3 shootDir = firePoint.root.forward;
+                AutoShooter autoShooter = firePoint.root.GetComponent<AutoShooter>();
+                if (autoShooter != null && autoShooter.CurrentTarget != null)
+                {
+                    shootDir = autoShooter.CurrentTarget.position - firePoint.position;
+                }
 
-            bullet.SetActive(true);
+                shootDir.y = 0;
+                if (shootDir == Vector3.zero) shootDir = transform.forward;
+
+                Quaternion baseRotation = Quaternion.LookRotation(shootDir);
+                Quaternion finalRotation = baseRotation * Quaternion.Euler(rotationOffset);
+
+                bullet.transform.position = firePoint.position;
+                bullet.transform.rotation = finalRotation;
+
+                bullet.SetActive(true);
+                bulletSpawned = true;
+            }
+
+            if (bulletSpawned)
+            {
+                StartCoroutine(MuzzleFlashRoutine());
+            }
+        }
+    }
+
+    private IEnumerator MuzzleFlashRoutine()
+    {
+        yield return null;
+
+        GameObject flashObj = ObjectPool.Instance != null ? ObjectPool.Instance.GetMuzzleFlash() : null;
+        if (flashObj != null && firePoint != null)
+        {
+            activeFlashes.Add(flashObj); 
+
+            flashObj.transform.position = firePoint.position;
+            flashObj.transform.rotation = firePoint.rotation;
+            flashObj.SetActive(true);
+            
+            ParticleSystem ps = flashObj.GetComponent<ParticleSystem>();
+            if (ps != null) 
+            {
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                ps.Play();
+            }
+
+
+            yield return new WaitForSeconds(0.1f);
+
+  
+            if (ps != null)
+            {
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+            if (flashObj != null)
+            {
+                flashObj.SetActive(false);
+            }
+
+            activeFlashes.Remove(flashObj); 
         }
     }
 }

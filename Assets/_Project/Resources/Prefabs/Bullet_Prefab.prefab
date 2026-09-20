@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6533808257382519981}
   - component: {fileID: 8440829972468366713}
   - component: {fileID: 5304799485845627748}
+  - component: {fileID: 1015327817652260387}
   m_Layer: 0
   m_Name: Bullet_Prefab
   m_TagString: Untagged
@@ -33,7 +34,8 @@ Transform:
   m_LocalPosition: {x: -1.878, y: 1.685, z: 0.004}
   m_LocalScale: {x: 0.05, y: 0.05, z: 0.2}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1597603438000957853}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!33 &3519536505270133151
@@ -152,4 +154,101 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 30
-  lifeTime: 3
+  maxDistance: 25
+  maxLifeTime: 2
+--- !u!114 &1015327817652260387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3693545713278607464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f817757215aa91b49921673389c29934, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  trailRenderer: {fileID: 0}
+  particleTrail: {fileID: 0}
+--- !u!1001 &990334096462616341
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7772575045009031650}
+    m_Modifications:
+    - target: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5048296169319087951, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: moveWithTransform
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5048296169319087951, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: ShapeModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5048296169319087951, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: VelocityModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5048296169319087951, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: EmissionModule.rateOverTime.scalar
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5048296169319087951, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: EmissionModule.rateOverDistance.scalar
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 8374371416526417975, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+      propertyPath: m_Name
+      value: FireEffect
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+--- !u!4 &1597603438000957853 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1987649025001782920, guid: 0afa4c09abcb406408ce8c1001eadff1, type: 3}
+  m_PrefabInstance: {fileID: 990334096462616341}
+  m_PrefabAsset: {fileID: 0}

@@ -38,6 +38,7 @@ public class Soldier : Entity
     {
         StateMachine.CurrentState?.PhysicsUpdate();
     }
+
     public void OnPointerDownShoot()
     {
         IsShooting = true;
