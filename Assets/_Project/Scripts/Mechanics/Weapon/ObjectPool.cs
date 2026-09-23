@@ -38,7 +38,7 @@ public class ObjectPool : MonoBehaviour
         {
             if (bulletPrefab != null)
             {
-                GameObject obj = Instantiate(bulletPrefab);
+                GameObject obj = Instantiate(bulletPrefab, transform);
                 obj.SetActive(false);
                 bulletPool.Add(obj);
             }
@@ -50,7 +50,7 @@ public class ObjectPool : MonoBehaviour
         {
             if (swordPrefab != null)
             {
-                GameObject obj = Instantiate(swordPrefab);
+                GameObject obj = Instantiate(swordPrefab, transform);
                 obj.SetActive(false);
                 swordPool.Add(obj);
             }
@@ -62,7 +62,7 @@ public class ObjectPool : MonoBehaviour
         {
             if (muzzleFlashPrefab != null)
             {
-                GameObject obj = Instantiate(muzzleFlashPrefab);
+                GameObject obj = Instantiate(muzzleFlashPrefab, transform);
                 obj.SetActive(false);
                 muzzleFlashPool.Add(obj);
             }
@@ -81,7 +81,7 @@ public class ObjectPool : MonoBehaviour
 
         if (bulletPrefab != null)
         {
-            GameObject newObj = Instantiate(bulletPrefab);
+            GameObject newObj = Instantiate(bulletPrefab, transform);
             newObj.SetActive(false);
             bulletPool.Add(newObj);
             return newObj;
@@ -101,7 +101,7 @@ public class ObjectPool : MonoBehaviour
 
         if (swordPrefab != null)
         {
-            GameObject newObj = Instantiate(swordPrefab);
+            GameObject newObj = Instantiate(swordPrefab, transform);
             newObj.SetActive(false);
             swordPool.Add(newObj);
             return newObj;
@@ -126,7 +126,7 @@ public class ObjectPool : MonoBehaviour
         // Nếu thiếu thì đẻ thêm
         if (selectedObj == null && muzzleFlashPrefab != null)
         {
-            selectedObj = Instantiate(muzzleFlashPrefab);
+            selectedObj = Instantiate(muzzleFlashPrefab, transform);
             selectedObj.SetActive(false);
             muzzleFlashPool.Add(selectedObj);
         }
@@ -152,7 +152,7 @@ public class ObjectPool : MonoBehaviour
             }
         }
 
-        GameObject newObj = Instantiate(prefab);
+        GameObject newObj = Instantiate(prefab, transform);
         newObj.SetActive(false);
         genericPool[prefab].Add(newObj);
         return newObj;

@@ -23,7 +23,7 @@ public class WeaponRecoil : MonoBehaviour
     [SerializeField] private CinemachineImpulseSource impulseSource;
 
     private Vector3 originalPos;
-    private Vector3 originalRot;
+    private Quaternion originalRotQuat;
 
     private Tween recoilPosTween;
     private Tween recoilRotTween;
@@ -32,10 +32,10 @@ public class WeaponRecoil : MonoBehaviour
     private float currentRecoilZ = 0f;
     private float currentRecoilPitch = 0f;
 
-    private void Start()
+    private void Awake()
     {
         originalPos = transform.localPosition;
-        originalRot = transform.localEulerAngles;
+        originalRotQuat = transform.localRotation;
         
         if (impulseSource == null) 
             impulseSource = GetComponent<CinemachineImpulseSource>();
@@ -72,7 +72,7 @@ public class WeaponRecoil : MonoBehaviour
             // ------ LOGIC DÀNH CHO SÚNG RỜI (STATIC MESH) ------
             // Tween trực tiếp vào Transform vì không bị Animator cản trở
             transform.localPosition = originalPos;
-            transform.localRotation = Quaternion.Euler(originalRot);
+            transform.localRotation = originalRotQuat;
 
             recoilPosTween = transform.DOLocalMoveZ(originalPos.z + recoilZ, recoilDuration)
                 .SetEase(Ease.OutExpo)
@@ -81,11 +81,14 @@ public class WeaponRecoil : MonoBehaviour
                     recoilPosTween = transform.DOLocalMoveZ(originalPos.z, returnDuration).SetEase(Ease.InOutSine);
                 });
 
-            recoilRotTween = transform.DOLocalRotate(new Vector3(originalRot.x + recoilPitch, originalRot.y, originalRot.z), recoilDuration)
+            // Sử dụng Quaternion để cộng góc xoay an toàn tuyệt đối, tránh lỗi xoay 360 độ hoặc Gimbal Lock
+            Quaternion recoilTargetRot = originalRotQuat * Quaternion.Euler(recoilPitch, 0, 0);
+
+            recoilRotTween = transform.DOLocalRotateQuaternion(recoilTargetRot, recoilDuration)
                 .SetEase(Ease.OutExpo)
                 .OnComplete(() => 
                 {
-                    recoilRotTween = transform.DOLocalRotate(originalRot, returnDuration).SetEase(Ease.InOutSine);
+                    recoilRotTween = transform.DOLocalRotateQuaternion(originalRotQuat, returnDuration).SetEase(Ease.InOutSine);
                 });
         }
 
@@ -118,8 +121,9 @@ public class WeaponRecoil : MonoBehaviour
         
         if (!isAnimatedBone)
         {
+            // Reset lại đúng localRotation bằng Quaternion nguyên bản
             transform.localPosition = originalPos;
-            transform.localRotation = Quaternion.Euler(originalRot);
+            transform.localRotation = originalRotQuat;
         }
     }
 }

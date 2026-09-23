@@ -33,9 +33,8 @@ public class SoldierThrowBombState : SoldierState
             soldier.Animator.SetFloat(AnimData.SpeedHash, 0f);
         }
 
-        // BỔ SUNG LOGIC: Quay mặt ngay lập tức vào mục tiêu (Snap to target) khi bắt đầu ném
-        AutoShooter autoShooter = soldier.GetComponent<AutoShooter>();
-        Transform bombTarget = (autoShooter != null) ? autoShooter.CurrentTarget : null;
+        // TÌM MỤC TIÊU 360 ĐỘ THAY VÌ DÙNG AUTO SHOOTER
+        Transform bombTarget = FindClosestEnemyForBomb();
 
         if (bombTarget != null)
         {
@@ -50,29 +49,46 @@ public class SoldierThrowBombState : SoldierState
         UpdateTrajectory();
     }
 
+    private Transform FindClosestEnemyForBomb()
+    {
+        // Quét góc rộng 360 độ (bán kính 15m) để dễ dàng chọn quái ném bom
+        float detectionRadius = 15f; 
+        LayerMask enemyLayer = LayerMask.GetMask("Enemy");
+        Collider[] colliders = Physics.OverlapSphere(soldier.transform.position, detectionRadius, enemyLayer);
+        
+        float minDistance = Mathf.Infinity;
+        Transform closest = null;
+
+        foreach (Collider col in colliders)
+        {
+            float dist = Vector3.Distance(soldier.transform.position, col.transform.position);
+            if (dist < minDistance)
+            {
+                minDistance = dist;
+                closest = col.transform;
+            }
+        }
+        return closest;
+    }
+
     private void UpdateTrajectory()
     {
         Vector3 startPos = soldier.LeftHandSpawnPoint != null ? soldier.LeftHandSpawnPoint.position : soldier.transform.position + Vector3.up;
         
-        // DÙNG CHUNG TẦM NGẮM CỦA AUTO SHOOTER
-        AutoShooter autoShooter = soldier.GetComponent<AutoShooter>();
-        Transform bombTarget = (autoShooter != null) ? autoShooter.CurrentTarget : null;
+        // Quét tìm quái liên tục để cập nhật đường bay
+        Transform bombTarget = FindClosestEnemyForBomb();
 
         if (bombTarget != null)
         {
             // Lựa chọn 1 (Có Quái): MƯỢN KHOẢNG CÁCH của quái, nhưng ÉP HƯỚNG THEO JOYSTICK
             float distanceToEnemy = Vector3.Distance(new Vector3(startPos.x, 0, startPos.z), new Vector3(bombTarget.position.x, 0, bombTarget.position.z));
-            
-            // Tính bù trừ lăn trớn (giống hệt cũ)
             float offsetDistance = Mathf.Min(2f, distanceToEnemy * 0.5f);
             float finalThrowDistance = distanceToEnemy - offsetDistance;
 
-            // Hướng ném bám chặt theo hướng mặt nhân vật đang xoay (Joystick)
             Vector3 throwDirection = soldier.transform.forward;
             throwDirection.y = 0;
             throwDirection.Normalize();
 
-            // Tính toán lực ném
             Vector3 velocityXZ = throwDirection * (finalThrowDistance / FIXED_TIME_OF_FLIGHT);
             
             // Giữ nguyên tính toán độ cao rớt theo vị trí Y của quái

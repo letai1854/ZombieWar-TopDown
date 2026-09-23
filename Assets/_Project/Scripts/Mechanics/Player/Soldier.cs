@@ -19,10 +19,16 @@ public class Soldier : Entity
     [Header("Bomb Settings")]
     [Tooltip("Thời gian đứng yên để phát animation ném bom trước khi trở lại bình thường (Thời gian GỐC)")]
     [SerializeField] private float throwBombDuration = 1.2f;
+    [Tooltip("Thời gian hồi chiêu của Bom (Giây)")]
+    [SerializeField] private float bombCooldown = 8f; // Cân bằng ở mức 8 giây
     [Tooltip("Vũ khí bên tay trái (AttachedPistol) để ẩn đi khi ném bom")]
     [SerializeField] private GameObject leftHandWeapon;
     [Tooltip("Kéo object WeaponManager vào đây để tính thêm thời gian delay riêng của từng súng")]
     [SerializeField] private WeaponManager weaponManager;
+    
+    private float nextBombTime = 0f;
+    public float BombCooldownRemaining => Mathf.Max(0, nextBombTime - Time.time);
+    public float BombCooldownTotal => bombCooldown;
     
     [Header("Bomb Spawning")]
     [SerializeField] private GameObject bombPrefab;
@@ -37,6 +43,13 @@ public class Soldier : Entity
     public float ThrowUpwardForce => throwUpwardForce;
     public GameObject BombPrefab => bombPrefab;
 
+    [Header("Health Settings")]
+    public float maxHealth = 100f;
+    private float currentHealth;
+    
+    // Sự kiện để UI đăng ký lắng nghe khi máu thay đổi
+    public event System.Action<float, float> OnHealthChanged;
+
     protected override void Awake()
     {
         base.Awake();
@@ -45,6 +58,32 @@ public class Soldier : Entity
         MoveState = new SoldierMoveState(this, StateMachine);
         AttackState = new SoldierAttackState(this, StateMachine);
         ThrowBombState = new SoldierThrowBombState(this, StateMachine);
+
+        currentHealth = maxHealth;
+    }
+
+    public bool IsDead { get; private set; }
+
+    public void TakeDamage(float amount)
+    {
+        if (IsDead) return;
+
+        currentHealth -= amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        // Gọi sự kiện cập nhật UI
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+
+        if (currentHealth <= 0)
+        {
+            IsDead = true;
+            Debug.Log("Player Dead!");
+            // Thông báo cho GameManager
+            if (GameManager.HasInstance)
+            {
+                GameManager.Instance.GameLose();
+            }
+        }
     }
 
     private void Start()
@@ -79,8 +118,9 @@ public class Soldier : Entity
 
     public void OnPointerDownThrowBomb()
     {
-        if (!IsThrowingBomb)
+        if (!IsThrowingBomb && Time.time >= nextBombTime)
         {
+            nextBombTime = Time.time + bombCooldown;
             StateMachine.ChangeState(ThrowBombState);
         }
     }

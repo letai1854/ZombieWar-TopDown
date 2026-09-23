@@ -51,9 +51,11 @@ public class WeaponManager : MonoBehaviour
         }
 
         if (weapons.Count <= 1) return;
+        
+        if (SoundManager.HasInstance) SoundManager.Instance.PlayButtonClick();
+        
         currentWeaponIndex = (currentWeaponIndex + 1) % weapons.Count;
         EquipWeapon(currentWeaponIndex);
-        
     }
 
     public void ShootCurrentWeapon()

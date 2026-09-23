@@ -1,0 +1,10 @@
+# ninja log v5
+25	1593	8118378406494626	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	2d8f5b3605fb64a
+35	1610	8118378406646886	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	ea51bf9efc8f38b
+0	1622	8118378406765700	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	a0484fb784d45a07
+66	1707	8118378407688757	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	d5624360f097d006
+9	1723	8118378407836128	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	328d3c2309c526da
+53	1837	8118378408976239	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	1c162aba02506795
+43	1935	8118378409971476	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	ad7eb4034915401a
+17	2062	8118378411206273	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	4bc62156496e3aab
+2063	2217	8118378412782585	D:/WorkSpace/ZombieWar_TopDown/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/705y91n3/obj/armeabi-v7a/libgame.so	ff3bd16826bcf4db

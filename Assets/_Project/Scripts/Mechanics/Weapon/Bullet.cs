@@ -51,6 +51,11 @@ public class Bullet : MonoBehaviour
 
         if (other.CompareTag("Enemy"))
         {
+            Zombie zombie = other.GetComponent<Zombie>();
+            if (zombie != null)
+            {
+                zombie.TakeDamage(25f); // Sát thương của đạn
+            }
         }
 
         Deactivate();

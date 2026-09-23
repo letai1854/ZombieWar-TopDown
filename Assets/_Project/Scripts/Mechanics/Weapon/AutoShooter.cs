@@ -26,6 +26,10 @@ public class AutoShooter : MonoBehaviour
     private void Start()
     {
         soldier = GetComponent<Soldier>();
+        if (weaponManager == null)
+        {
+            weaponManager = GetComponentInChildren<WeaponManager>();
+        }
     }
 
     private void Update()

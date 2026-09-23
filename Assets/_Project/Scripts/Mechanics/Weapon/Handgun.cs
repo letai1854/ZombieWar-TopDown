@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class Shotgun : WeaponBase
+public class Handgun : WeaponBase
 {
     [Header("Adjust Direction")]
     [SerializeField] private Vector3 rotationOffset = Vector3.zero;
@@ -76,6 +76,7 @@ public class Shotgun : WeaponBase
 
             if (bulletSpawned)
             {
+                if (SoundManager.HasInstance) SoundManager.Instance.PlayShotgunShot();
                 StartCoroutine(MuzzleFlashRoutine());
             }
         }

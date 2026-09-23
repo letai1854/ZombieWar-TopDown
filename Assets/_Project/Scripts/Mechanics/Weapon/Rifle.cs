@@ -16,6 +16,12 @@ public class Rifle : WeaponBase
     private void Awake()
     {
         weaponRecoil = GetComponentInChildren<WeaponRecoil>();
+        if (firePoint == null)
+        {
+            Transform found = transform.Find("FirePoint");
+            if (found != null) firePoint = found;
+            else firePoint = transform;
+        }
     }
 
     private void OnEnable()
@@ -74,6 +80,7 @@ public class Rifle : WeaponBase
 
             if (bulletSpawned)
             {
+                if (SoundManager.HasInstance) SoundManager.Instance.PlayRifleShot();
                 StartCoroutine(MuzzleFlashRoutine());
             }
         }
@@ -99,7 +106,6 @@ public class Rifle : WeaponBase
                 ps.Play();
             }
 
-            // Gọi hiệu ứng giật súng và rung màn hình đồng bộ với tia lửa
             if (weaponRecoil != null)
             {
                 weaponRecoil.TriggerRecoil();
