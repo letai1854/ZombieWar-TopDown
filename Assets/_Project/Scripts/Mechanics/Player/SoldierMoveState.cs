@@ -51,6 +51,5 @@ public override void PhysicsUpdate()
     public override void Exit()
     {
         base.Exit();
-        // soldier.Animator.SetFloat(AnimData.SpeedHash, 0f);
     }
 }

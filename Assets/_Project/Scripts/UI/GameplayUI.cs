@@ -20,7 +20,6 @@ public class GameplayUI : MonoBehaviour
             GameManager.Instance.OnTimeUpdated += HandleTimeUpdated;
             GameManager.Instance.OnGameStateChanged += HandleGameStateChanged;
             
-            // Đồng bộ trạng thái UI ngay khi vừa load scene (tránh việc bật UI sớm khi chưa Play)
             HandleGameStateChanged(GameManager.Instance.CurrentState);
         }
     }
@@ -49,12 +48,10 @@ public class GameplayUI : MonoBehaviour
         bool isPlaying = (state == GameState.Playing);
         if (state == GameState.Win || state == GameState.Lose || isPlaying)
         {
-            // Tìm tất cả các Canvas trong Game
             Canvas[] canvases = FindObjectsOfType<Canvas>(true);
             foreach (var canvas in canvases)
             {
-                // Chỉ ẩn/hiện các Canvas nằm trong Scene hiện tại (02_Gameplay)
-                // KHÔNG đụng tới Canvas chứa Win/Lose Popup (nằm trong DontDestroyOnLoad)
+              
                 if (canvas.gameObject.scene.name == UnityEngine.SceneManagement.SceneManager.GetActiveScene().name)
                 {
                     canvas.gameObject.SetActive(isPlaying);
@@ -77,7 +74,6 @@ public class GameplayUI : MonoBehaviour
 
             if (remaining > 0)
             {
-                // Đang trong thời gian hồi chiêu
                 if (bombButton != null) bombButton.interactable = false;
                 if (bombCooldownImage != null)
                 {
@@ -92,7 +88,6 @@ public class GameplayUI : MonoBehaviour
             }
             else
             {
-                // Sẵn sàng sử dụng
                 if (bombButton != null) bombButton.interactable = true;
                 if (bombCooldownImage != null) bombCooldownImage.gameObject.SetActive(false);
                 if (bombCooldownText != null) bombCooldownText.gameObject.SetActive(false);

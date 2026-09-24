@@ -47,14 +47,14 @@ public class Bullet : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") || other.CompareTag("Bullet")) return;
+        if (other.CompareTag(GameConstants.Tags.Player) || other.CompareTag(GameConstants.Tags.Bullet)) return;
 
-        if (other.CompareTag("Enemy"))
+        if (other.CompareTag(GameConstants.Tags.Enemy))
         {
             Zombie zombie = other.GetComponent<Zombie>();
             if (zombie != null)
             {
-                zombie.TakeDamage(25f); // Sát thương của đạn
+                zombie.TakeDamage(25f);
             }
         }
 

@@ -9,7 +9,7 @@ public class SoldierThrowBombState : SoldierState
 
     private Vector3 calculatedThrowVelocity;
     private const float FIXED_TIME_OF_FLIGHT = 1.0f;
-    private bool hasThrownBomb = false; // Biến đánh dấu bom đã rời tay chưa
+    private bool hasThrownBomb = false; 
 
     public SoldierThrowBombState(Soldier soldier, SoldierStateMachine stateMachine) 
         : base(soldier, stateMachine) 
@@ -33,7 +33,6 @@ public class SoldierThrowBombState : SoldierState
             soldier.Animator.SetFloat(AnimData.SpeedHash, 0f);
         }
 
-        // TÌM MỤC TIÊU 360 ĐỘ THAY VÌ DÙNG AUTO SHOOTER
         Transform bombTarget = FindClosestEnemyForBomb();
 
         if (bombTarget != null)
@@ -51,9 +50,8 @@ public class SoldierThrowBombState : SoldierState
 
     private Transform FindClosestEnemyForBomb()
     {
-        // Quét góc rộng 360 độ (bán kính 15m) để dễ dàng chọn quái ném bom
         float detectionRadius = 15f; 
-        LayerMask enemyLayer = LayerMask.GetMask("Enemy");
+        LayerMask enemyLayer = LayerMask.GetMask(GameConstants.Layers.Enemy);
         Collider[] colliders = Physics.OverlapSphere(soldier.transform.position, detectionRadius, enemyLayer);
         
         float minDistance = Mathf.Infinity;
@@ -75,12 +73,10 @@ public class SoldierThrowBombState : SoldierState
     {
         Vector3 startPos = soldier.LeftHandSpawnPoint != null ? soldier.LeftHandSpawnPoint.position : soldier.transform.position + Vector3.up;
         
-        // Quét tìm quái liên tục để cập nhật đường bay
         Transform bombTarget = FindClosestEnemyForBomb();
 
         if (bombTarget != null)
         {
-            // Lựa chọn 1 (Có Quái): MƯỢN KHOẢNG CÁCH của quái, nhưng ÉP HƯỚNG THEO JOYSTICK
             float distanceToEnemy = Vector3.Distance(new Vector3(startPos.x, 0, startPos.z), new Vector3(bombTarget.position.x, 0, bombTarget.position.z));
             float offsetDistance = Mathf.Min(2f, distanceToEnemy * 0.5f);
             float finalThrowDistance = distanceToEnemy - offsetDistance;
@@ -91,7 +87,6 @@ public class SoldierThrowBombState : SoldierState
 
             Vector3 velocityXZ = throwDirection * (finalThrowDistance / FIXED_TIME_OF_FLIGHT);
             
-            // Giữ nguyên tính toán độ cao rớt theo vị trí Y của quái
             float heightDiff = bombTarget.position.y - startPos.y;
             float velocityY = (heightDiff - 0.5f * Physics.gravity.y * FIXED_TIME_OF_FLIGHT * FIXED_TIME_OF_FLIGHT) / FIXED_TIME_OF_FLIGHT;
 
@@ -99,7 +94,6 @@ public class SoldierThrowBombState : SoldierState
         }
         else
         {
-            // Lựa chọn 2 (Không có quái): Ném hướng Joystick với lực cố định
             calculatedThrowVelocity = soldier.transform.forward * soldier.ThrowForwardForce + Vector3.up * soldier.ThrowUpwardForce;
         }
 
@@ -128,14 +122,12 @@ public class SoldierThrowBombState : SoldierState
             }
         }
 
-        // CẬP NHẬT ĐƯỜNG BAY LIÊN TỤC: Chỉ cập nhật khi quả bom CHƯA rời khỏi tay
         if (!hasThrownBomb)
         {
             UpdateTrajectory();
         }
         else
         {
-            // Tắt đường kẻ đi ngay khi bom vừa văng ra
             if (soldier.BombTrajectory != null)
             {
                 soldier.BombTrajectory.HideTrajectory();
@@ -192,7 +184,6 @@ public class SoldierThrowBombState : SoldierState
             soldier.BombTrajectory.HideTrajectory();
     }
 
-    // Xử lý sinh vật lý của Bom tại State này để đảm bảo Single Responsibility
     public void SpawnAndThrowBomb()
     {
         if (soldier.BombPrefab == null || soldier.LeftHandSpawnPoint == null)
@@ -222,7 +213,6 @@ public class SoldierThrowBombState : SoldierState
             rb.angularVelocity = new Vector3(Random.Range(-10f, 10f), Random.Range(-10f, 10f), Random.Range(-10f, 10f));
         }
 
-        // Đánh dấu bom đã rời tay để lập tức tắt đường ngắm Parabol
         hasThrownBomb = true;
     }
 }

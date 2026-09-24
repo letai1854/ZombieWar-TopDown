@@ -29,7 +29,7 @@ public class ZombieAttackState : ZombieState
 
         float distance = zombie.GetDistanceToPlayer();
 
-        if (distance > zombie.attackRange)
+        if (distance > zombie.ActualAttackRange)
         {
             stateMachine.ChangeState(zombie.ChaseState);
         }

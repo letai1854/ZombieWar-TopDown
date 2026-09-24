@@ -3,17 +3,24 @@ using System.Collections;
 
 public class ZombieEffects : MonoBehaviour
 {
-    private SkinnedMeshRenderer[] renderers;
+    private Renderer[] renderers;
     private MaterialPropertyBlock propBlock;
 
     private void Awake()
     {
-        renderers = GetComponentsInChildren<SkinnedMeshRenderer>();
         propBlock = new MaterialPropertyBlock();
     }
 
     public void TriggerHitFlash()
     {
+        // Quét lại toàn bộ lưới mỗi lần bắn trúng để đảm bảo KHÔNG THỂ trượt bất kỳ lưới nào (dù nó được load sau)
+        renderers = GetComponentsInChildren<Renderer>(true);
+        if (renderers == null || renderers.Length == 0)
+        {
+            Debug.LogError($"[ZombieEffects] Không thể chớp trắng vì {gameObject.name} KHÔNG CÓ Renderer!");
+            return;
+        }
+        
         StopCoroutine(nameof(HitFlashRoutine));
         StartCoroutine(HitFlashRoutine());
     }
@@ -22,6 +29,9 @@ public class ZombieEffects : MonoBehaviour
     {
         float duration = 0.15f;
         float elapsed = 0f;
+
+        // Báo log để chứng minh Code đã gọi chớp trắng
+        Debug.Log($"[ZombieEffects] Đang chớp trắng cho {gameObject.name} trên {renderers.Length} meshes!");
 
         while (elapsed < duration)
         {
@@ -69,6 +79,13 @@ public class ZombieEffects : MonoBehaviour
 
     private void SetProperty(string propName, float value)
     {
+        if (renderers == null || renderers.Length == 0)
+        {
+            renderers = GetComponentsInChildren<Renderer>(true);
+        }
+
+        if (renderers == null) return;
+
         foreach (var r in renderers)
         {
             r.GetPropertyBlock(propBlock);

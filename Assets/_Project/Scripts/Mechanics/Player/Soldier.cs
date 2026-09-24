@@ -20,7 +20,7 @@ public class Soldier : Entity
     [Tooltip("Thời gian đứng yên để phát animation ném bom trước khi trở lại bình thường (Thời gian GỐC)")]
     [SerializeField] private float throwBombDuration = 1.2f;
     [Tooltip("Thời gian hồi chiêu của Bom (Giây)")]
-    [SerializeField] private float bombCooldown = 8f; // Cân bằng ở mức 8 giây
+    [SerializeField] private float bombCooldown = 8f; 
     [Tooltip("Vũ khí bên tay trái (AttachedPistol) để ẩn đi khi ném bom")]
     [SerializeField] private GameObject leftHandWeapon;
     [Tooltip("Kéo object WeaponManager vào đây để tính thêm thời gian delay riêng của từng súng")]
@@ -47,7 +47,6 @@ public class Soldier : Entity
     public float maxHealth = 100f;
     private float currentHealth;
     
-    // Sự kiện để UI đăng ký lắng nghe khi máu thay đổi
     public event System.Action<float, float> OnHealthChanged;
 
     protected override void Awake()
@@ -71,14 +70,12 @@ public class Soldier : Entity
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
-        // Gọi sự kiện cập nhật UI
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
         if (currentHealth <= 0)
         {
             IsDead = true;
             Debug.Log("Player Dead!");
-            // Thông báo cho GameManager
             if (GameManager.HasInstance)
             {
                 GameManager.Instance.GameLose();
@@ -163,7 +160,6 @@ public class Soldier : Entity
         return total;
     }
 
-    // Cầu nối (Bridge) chuyển tiếp sự kiện Animation cho State xử lý (Tuân thủ SOLID)
     public void AnimationEvent_SpawnBomb()
     {
         if (StateMachine.CurrentState is SoldierThrowBombState throwState)

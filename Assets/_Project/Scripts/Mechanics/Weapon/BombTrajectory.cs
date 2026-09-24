@@ -6,7 +6,7 @@ public class BombTrajectory : MonoBehaviour
     private LineRenderer lineRenderer;
     
     [Header("Trajectory Settings")]
-    [SerializeField] private float lineWidth = 0.3f; // Độ dày nét vẽ (ngắn/mỏng lại)
+    [SerializeField] private float lineWidth = 0.3f; 
     [SerializeField] private int resolution = 30;
     [SerializeField] private float timeStep = 0.1f;
     [SerializeField] private LayerMask collisionMask;

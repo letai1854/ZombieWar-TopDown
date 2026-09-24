@@ -16,7 +16,6 @@ public class WeaponManager : MonoBehaviour
 
     private void Start()
     {
-        // Tự động tìm reference đến Soldier để check các trạng thái khóa (như ném bom)
         soldier = GetComponentInParent<Soldier>();
         if (soldier == null) soldier = FindObjectOfType<Soldier>();
 
@@ -43,7 +42,6 @@ public class WeaponManager : MonoBehaviour
 
     public void SwitchWeapon()
     {
-        // Tuyệt đối không cho phép đổi súng nếu đang ném bom (để tránh lỗi deactive súng giữa chừng)
         if (soldier != null && soldier.IsThrowingBomb)
         {
             Debug.LogWarning("[WEAPON] Không thể đổi súng lúc này vì đang ném bom!");

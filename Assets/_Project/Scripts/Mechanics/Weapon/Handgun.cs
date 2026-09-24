@@ -102,7 +102,6 @@ public class Handgun : WeaponBase
                 ps.Play();
             }
 
-            // Gọi hiệu ứng giật súng và rung màn hình đồng bộ với tia lửa
             if (weaponRecoil != null)
             {
                 weaponRecoil.TriggerRecoil();

@@ -21,7 +21,6 @@ public class ObjectPool : MonoBehaviour
     [SerializeField] private int muzzleFlashPoolSize = 10;
     private List<GameObject> muzzleFlashPool;
 
-    // Dictionary để Pool bất kỳ Prefab nào truyền vào (hỗ trợ nhiều loại hạt nổ khác nhau)
     private Dictionary<GameObject, List<GameObject>> genericPool = new Dictionary<GameObject, List<GameObject>>();
 
     private void Awake()
@@ -32,7 +31,6 @@ public class ObjectPool : MonoBehaviour
 
     private void Start()
     {
-        // Khởi tạo Bullet Pool
         bulletPool = new List<GameObject>();
         for (int i = 0; i < bulletPoolSize; i++)
         {
@@ -44,7 +42,6 @@ public class ObjectPool : MonoBehaviour
             }
         }
 
-        // Khởi tạo Sword Pool
         swordPool = new List<GameObject>();
         for (int i = 0; i < swordPoolSize; i++)
         {
@@ -56,7 +53,6 @@ public class ObjectPool : MonoBehaviour
             }
         }
 
-        // Khởi tạo Muzzle Flash Pool
         muzzleFlashPool = new List<GameObject>();
         for (int i = 0; i < muzzleFlashPoolSize; i++)
         {
@@ -113,7 +109,6 @@ public class ObjectPool : MonoBehaviour
     {
         GameObject selectedObj = null;
 
-        // Tìm tia lửa đang rảnh
         foreach (var obj in muzzleFlashPool)
         {
             if (!obj.activeInHierarchy)
@@ -123,7 +118,6 @@ public class ObjectPool : MonoBehaviour
             }
         }
 
-        // Nếu thiếu thì đẻ thêm
         if (selectedObj == null && muzzleFlashPrefab != null)
         {
             selectedObj = Instantiate(muzzleFlashPrefab, transform);
@@ -134,7 +128,6 @@ public class ObjectPool : MonoBehaviour
         return selectedObj;
     }
 
-    // Hàm Pool đa năng: Tự động tạo và quản lý Pool cho bất kỳ Prefab nào (rất tiện cho Bomb và VFX)
     public GameObject GetFromPool(GameObject prefab)
     {
         if (prefab == null) return null;
@@ -158,7 +151,6 @@ public class ObjectPool : MonoBehaviour
         return newObj;
     }
 
-    // Tiện ích: Đưa Object về Pool (Tắt đi) sau một khoảng thời gian
     public void ReturnToPool(GameObject obj, float delay)
     {
         if (obj != null && gameObject.activeInHierarchy)

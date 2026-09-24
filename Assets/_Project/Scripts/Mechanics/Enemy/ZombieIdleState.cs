@@ -7,7 +7,7 @@ public class ZombieIdleState : ZombieState
     public override void Enter()
     {
         base.Enter();
-        if (zombie.Agent != null && zombie.Agent.isActiveAndEnabled)
+        if (zombie.Agent != null && zombie.Agent.isActiveAndEnabled && zombie.Agent.isOnNavMesh)
         {
             zombie.Agent.isStopped = true;
         }

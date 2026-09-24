@@ -28,7 +28,6 @@ public class WeaponRecoil : MonoBehaviour
     private Tween recoilPosTween;
     private Tween recoilRotTween;
     
-    // Lưu trữ độ lệch (offset) cho chế độ Xương (Animated Bone)
     private float currentRecoilZ = 0f;
     private float currentRecoilPitch = 0f;
 
@@ -48,8 +47,7 @@ public class WeaponRecoil : MonoBehaviour
 
         if (isAnimatedBone)
         {
-            // ------ LOGIC DÀNH CHO XƯƠNG (BONE) ------
-            // Dùng biến ảo để cộng dồn trong LateUpdate, không đụng chạm trực tiếp transform
+        
             currentRecoilZ = 0f;
             currentRecoilPitch = 0f;
 
@@ -69,8 +67,7 @@ public class WeaponRecoil : MonoBehaviour
         }
         else
         {
-            // ------ LOGIC DÀNH CHO SÚNG RỜI (STATIC MESH) ------
-            // Tween trực tiếp vào Transform vì không bị Animator cản trở
+           
             transform.localPosition = originalPos;
             transform.localRotation = originalRotQuat;
 
@@ -81,7 +78,6 @@ public class WeaponRecoil : MonoBehaviour
                     recoilPosTween = transform.DOLocalMoveZ(originalPos.z, returnDuration).SetEase(Ease.InOutSine);
                 });
 
-            // Sử dụng Quaternion để cộng góc xoay an toàn tuyệt đối, tránh lỗi xoay 360 độ hoặc Gimbal Lock
             Quaternion recoilTargetRot = originalRotQuat * Quaternion.Euler(recoilPitch, 0, 0);
 
             recoilRotTween = transform.DOLocalRotateQuaternion(recoilTargetRot, recoilDuration)
@@ -92,7 +88,6 @@ public class WeaponRecoil : MonoBehaviour
                 });
         }
 
-        // Rung màn hình
         if (impulseSource != null)
         {
             impulseSource.GenerateImpulse();
@@ -101,7 +96,6 @@ public class WeaponRecoil : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Chỉ áp dụng bù trừ LateUpdate nếu đây là cục xương bị Animator điều khiển
         if (isAnimatedBone)
         {
             if (Mathf.Abs(currentRecoilZ) > 0.001f || Mathf.Abs(currentRecoilPitch) > 0.001f)
@@ -121,7 +115,6 @@ public class WeaponRecoil : MonoBehaviour
         
         if (!isAnimatedBone)
         {
-            // Reset lại đúng localRotation bằng Quaternion nguyên bản
             transform.localPosition = originalPos;
             transform.localRotation = originalRotQuat;
         }

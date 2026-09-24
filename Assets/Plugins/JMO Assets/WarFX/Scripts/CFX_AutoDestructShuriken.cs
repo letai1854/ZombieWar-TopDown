@@ -27,7 +27,10 @@ public class CFX_AutoDestructShuriken : MonoBehaviour
 					#endif
 				}
 				else
-					GameObject.Destroy(this.gameObject);
+				{
+					// FORCE DEACTIVATE FOR OBJECT POOLING INSTEAD OF DESTROY
+					this.gameObject.SetActive(false);
+				}
 				break;
 			}
 		}

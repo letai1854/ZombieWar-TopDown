@@ -15,17 +15,18 @@ public class GameManager : BaseManager<GameManager>
 {
     public GameState CurrentState { get; private set; }
 
-    public float gameDuration = 180f; // 3 phút
+    [Header("Game Settings")]
+    public string startingLevel = "02_Level1"; 
+    public float gameDuration = 180f; 
     public float CurrentTime { get; private set; }
     
-    // Các event để UI dễ dàng kết nối
+
     public event Action<GameState> OnGameStateChanged;
     public event Action<float> OnTimeUpdated;
 
     protected override void Awake()
     {
         base.Awake();
-        // Kiểm tra xem chúng ta đang bắt đầu ở Scene nào để set State tương ứng
         string sceneName = SceneManager.GetActiveScene().name;
         if (sceneName.ToLower().Contains("init")) CurrentState = GameState.Init;
         else if (sceneName.ToLower().Contains("home")) CurrentState = GameState.Home;
@@ -60,13 +61,26 @@ public class GameManager : BaseManager<GameManager>
         StartCoroutine(LoadSceneRoutine("01_Home", GameState.Home));
     }
 
+    public void LoadNextLevel()
+    {
+        string currentScene = SceneManager.GetActiveScene().name;
+        if (currentScene == "02_Level1")
+        {
+            StartCoroutine(LoadSceneRoutine("03_Level2", GameState.Playing));
+        }
+        else
+        {
+            StartCoroutine(LoadSceneRoutine("01_Home", GameState.Home));
+        }
+    }
+
     public void StartGame()
     {
         if (SoundManager.HasInstance) SoundManager.Instance.PlayBGM(SoundManager.Instance.gameplayBGM);
         Time.timeScale = 1f;
         CurrentTime = gameDuration;
         ChangeState(GameState.Playing);
-        SceneManager.LoadScene("02_Gameplay"); 
+        SceneManager.LoadScene(startingLevel); 
     }
 
     public void GameLose()
@@ -91,37 +105,32 @@ public class GameManager : BaseManager<GameManager>
 
     public void RetryGame()
     {
-        StartCoroutine(LoadSceneRoutine("02_Gameplay", GameState.Playing));
+        string currentScene = SceneManager.GetActiveScene().name;
+        StartCoroutine(LoadSceneRoutine(currentScene, GameState.Playing));
     }
 
     private System.Collections.IEnumerator LoadSceneRoutine(string sceneName, GameState newState)
     {
-        // 1. Chuyển nhạc nền ngay lập tức
         if (SoundManager.HasInstance) 
         {
             SoundManager.Instance.PlayBGM(newState == GameState.Home ? SoundManager.Instance.homeBGM : SoundManager.Instance.gameplayBGM);
         }
 
-        // 2. Reset dữ liệu trước
         if (newState == GameState.Playing)
         {
             CurrentTime = gameDuration;
         }
         ResetZombies();
 
-        // 3. Load Scene (quá trình này mất 1 frame)
         SceneManager.LoadScene(sceneName);
 
-        // 4. ĐỢI ĐÚNG 1 FRAME ĐỂ SCENE MỚI RENDER XONG
         yield return null;
 
-        // 5. Lúc này scene mới đã che kín màn hình, ta tắt Popup trước
         if (UIManager.HasInstance)
         {
             UIManager.Instance.HideAllPopups();
         }
 
-        // 6. Sau khi tắt Popup xong, mới đổi State (lúc này UI Joystick mới được phép hiện lên)
         ChangeState(newState);
 
         Time.timeScale = 1f;
@@ -129,8 +138,7 @@ public class GameManager : BaseManager<GameManager>
 
     private void ResetZombies()
     {
-        // Vì ObjectPooler là Singleton (DontDestroyOnLoad), các Zombie đang sống sẽ ko bị huỷ khi chuyển Scene
-        // Nên ta phải tự tắt chúng đi (trả về pool)
+   
         if (ObjectPooler.HasInstance)
         {
             foreach (Transform child in ObjectPooler.Instance.transform)

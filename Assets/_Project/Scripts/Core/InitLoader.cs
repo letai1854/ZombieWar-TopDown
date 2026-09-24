@@ -13,6 +13,9 @@ public class InitLoader : MonoBehaviour
 
     private void Start()
     {
+        QualitySettings.vSyncCount = 0; 
+        Application.targetFrameRate = 120;
+
         if (loadingSlider != null)
         {
             loadingSlider.minValue = 0f;

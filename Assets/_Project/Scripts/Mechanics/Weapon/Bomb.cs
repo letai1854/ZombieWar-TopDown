@@ -5,7 +5,7 @@ public class Bomb : MonoBehaviour
     [SerializeField] private float delay = 2f;
     [SerializeField] private float radius = 6f;
     [SerializeField] private float force = 700f;
-    [SerializeField] private float damage = 100f; // Sát thương của lựu đạn
+    [SerializeField] private float damage = 100f; 
     [Tooltip("Danh sách các VFX Particle sẽ được sinh ra cùng lúc để trộn hiệu ứng")]
     [SerializeField] private System.Collections.Generic.List<GameObject> explosionEffectPrefabs;
 
@@ -14,6 +14,9 @@ public class Bomb : MonoBehaviour
     private float beepTimer;
     private float beepInterval;
     private AudioSource bombAudioSource;
+    private GameObject aoeIndicator;
+    private Material aoeMaterial;
+    private LineRenderer aoeOutline;
 
     private void OnEnable()
     {
@@ -23,19 +26,62 @@ public class Bomb : MonoBehaviour
         if (bombAudioSource == null)
         {
             bombAudioSource = gameObject.AddComponent<AudioSource>();
-            bombAudioSource.spatialBlend = 0f; // Đổi về 2D (0f) để Camera góc nhìn trên cao luôn nghe rõ
+            bombAudioSource.spatialBlend = 0f; 
             bombAudioSource.playOnAwake = false;
         }
 
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
+            // Bật Continuous Dynamic để chống lỗi xuyên vật thể khi bay nhanh (đặc biệt là mặt dốc hẹp)
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
 
         beepInterval = 0.5f;
-        beepTimer = 0f; // Sửa số này thành 0 để bom kêu tiếng đầu tiên NGAY LẬP TỨC khi vừa rời tay!
+        beepTimer = 0f; 
+
+        if (aoeOutline == null)
+        {
+            aoeOutline = gameObject.AddComponent<LineRenderer>();
+            aoeOutline.startWidth = 0.1f;
+            aoeOutline.endWidth = 0.1f;
+            aoeOutline.loop = true;
+            aoeOutline.useWorldSpace = true;
+            aoeOutline.positionCount = 40;
+            
+            Shader spriteShader = Shader.Find(GameConstants.Shaders.SpritesDefault);
+            if (spriteShader != null)
+            {
+                aoeOutline.material = new Material(spriteShader);
+                aoeOutline.startColor = new Color(1f, 0f, 0f, 0.8f);
+                aoeOutline.endColor = new Color(1f, 0f, 0f, 0.8f);
+            }
+        }
+        aoeOutline.enabled = true;
+
+        if (aoeIndicator == null)
+        {
+            aoeIndicator = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Destroy(aoeIndicator.GetComponent<Collider>()); 
+            
+            aoeIndicator.transform.SetParent(transform);
+            
+            Shader spriteShader = Shader.Find(GameConstants.Shaders.SpritesDefault);
+            if (spriteShader != null)
+            {
+                aoeMaterial = new Material(spriteShader);
+                aoeIndicator.GetComponent<Renderer>().material = aoeMaterial;
+            }
+        }
+        aoeIndicator.SetActive(true);
+    }
+
+    private void OnDisable()
+    {
+        if (aoeOutline != null) aoeOutline.enabled = false;
+        if (aoeIndicator != null) aoeIndicator.SetActive(false);
     }
 
     private void Update()
@@ -58,12 +104,11 @@ public class Bomb : MonoBehaviour
                 
                 if (tickClip != null)
                 {
-                    bombAudioSource.pitch = 1f; // Nếu có âm thanh chuẩn do bạn gắn, không cần bóp méo cao độ nữa
+                    bombAudioSource.pitch = 1f; 
                     bombAudioSource.PlayOneShot(tickClip, 1f);
                 }
                 else
                 {
-                    // Dự phòng nếu bạn chưa gắn: Lấy tiếng súng bóp méo
                     AudioClip fallbackClip = SoundManager.Instance.buttonClickSFX != null 
                                          ? SoundManager.Instance.buttonClickSFX 
                                          : SoundManager.Instance.rifleShotSFX;
@@ -75,6 +120,8 @@ public class Bomb : MonoBehaviour
                 }
             }
         }
+
+        DrawAoEIndicator(urgency);
 
         if (countdown <= 0f)
         {
@@ -104,7 +151,7 @@ public class Bomb : MonoBehaviour
         Collider[] hits = Physics.OverlapSphere(transform.position, radius);
         foreach (Collider hit in hits)
         {
-            if (hit.CompareTag("Enemy"))
+            if (hit.CompareTag(GameConstants.Tags.Enemy))
             {
                 Zombie zombie = hit.GetComponent<Zombie>();
                 if (zombie != null)
@@ -128,5 +175,40 @@ public class Bomb : MonoBehaviour
 #endif
 
         gameObject.SetActive(false);
+    }
+
+    private void DrawAoEIndicator(float urgency)
+    {
+        Vector3 center = transform.position;
+        center.y = 0.15f; 
+
+        if (aoeOutline != null)
+        {
+            int segments = aoeOutline.positionCount;
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = ((float)i / segments) * Mathf.PI * 2f;
+                float x = Mathf.Sin(angle) * radius; 
+                float z = Mathf.Cos(angle) * radius;
+                aoeOutline.SetPosition(i, center + new Vector3(x, 0, z));
+            }
+        }
+
+        if (aoeIndicator == null || aoeMaterial == null) return;
+
+        
+        float flashSpeed = 1.5f + (urgency * 2f); 
+        float sineValue = Mathf.Sin(Time.time * flashSpeed); 
+        float smoothPulse = (sineValue + 1f) * 0.5f; 
+
+        float alpha = 0.05f + (smoothPulse * 0.15f); 
+        aoeMaterial.color = new Color(1f, 0f, 0f, alpha); 
+        
+        float scaleMultiplier = smoothPulse;
+        float currentDiameter = (radius * 2f) * scaleMultiplier;
+        
+        aoeIndicator.transform.localScale = new Vector3(currentDiameter, 0.01f, currentDiameter);
+        aoeIndicator.transform.position = center;
+        aoeIndicator.transform.rotation = Quaternion.identity; 
     }
 }

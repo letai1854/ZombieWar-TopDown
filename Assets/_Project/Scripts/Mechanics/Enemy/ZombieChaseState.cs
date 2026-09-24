@@ -2,13 +2,16 @@ using UnityEngine;
 
 public class ZombieChaseState : ZombieState
 {
+    private float pathUpdateTimer;
+    private const float PATH_UPDATE_INTERVAL = 0.2f; 
+
     public ZombieChaseState(Zombie zombie, ZombieStateMachine stateMachine, string animBoolName) : base(zombie, stateMachine, animBoolName) { }
 
     public override void Enter()
     {
         base.Enter();
 
-        if (zombie.Agent != null && zombie.Agent.isActiveAndEnabled)
+        if (zombie.Agent != null && zombie.Agent.isActiveAndEnabled && zombie.Agent.isOnNavMesh)
         {
             zombie.Agent.isStopped = false;
         }
@@ -21,16 +24,16 @@ public class ZombieChaseState : ZombieState
         if (zombie.TargetPlayer == null) return;
 
         float distance = zombie.GetDistanceToPlayer();
-        Debug.Log($"[Zombie] Distance to Player: {distance}");
 
-        bool isCloseEnough = distance <= zombie.attackRange;
+        bool isCloseEnough = distance <= zombie.ActualAttackRange;
 
-        // Thêm kiểm tra bằng Raycast theo đúng yêu cầu của bạn để chống lỗi khoảng cách
         if (!isCloseEnough)
         {
-            Vector3 rayStart = zombie.transform.position + Vector3.up * 1f; // Bắn từ ngang ngực
+            float chestHeight = 1f * zombie.transform.localScale.y;
+            Vector3 rayStart = zombie.transform.position + Vector3.up * chestHeight; 
             Vector3 dirToPlayer = (zombie.TargetPlayer.position - zombie.transform.position).normalized;
-            if (Physics.Raycast(rayStart, dirToPlayer, out RaycastHit hit, zombie.attackRange))
+            
+            if (Physics.Raycast(rayStart, dirToPlayer, out RaycastHit hit, zombie.ActualAttackRange))
             {
                 if (hit.collider.CompareTag("Player"))
                 {
@@ -43,16 +46,20 @@ public class ZombieChaseState : ZombieState
         {
             stateMachine.ChangeState(zombie.AttackState);
         }
-        else if (distance > zombie.detectionRadius * 1.5f) // Thoát khỏi tầm nhìn
+        else if (distance > zombie.detectionRadius * 1.5f) 
         {
             stateMachine.ChangeState(zombie.IdleState);
         }
         else
         {
-            // Cập nhật vị trí NavMeshAgent
-            if (zombie.Agent.isActiveAndEnabled)
+            pathUpdateTimer -= Time.deltaTime;
+            if (pathUpdateTimer <= 0f)
             {
-                zombie.Agent.SetDestination(zombie.TargetPlayer.position);
+                pathUpdateTimer = PATH_UPDATE_INTERVAL;
+                if (zombie.Agent.isActiveAndEnabled && zombie.Agent.isOnNavMesh)
+                {
+                    zombie.Agent.SetDestination(zombie.TargetPlayer.position);
+                }
             }
         }
     }

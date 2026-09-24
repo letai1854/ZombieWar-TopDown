@@ -6,40 +6,88 @@ public class PlayerHealthUI : MonoBehaviour
     [Header("UI References")]
     [Tooltip("Kéo Slider hiển thị máu vào đây")]
     public Slider healthSlider;
+    
+    [Tooltip("Kéo Image chứa hiệu ứng máu viền màn hình vào đây")]
+    public Image bloodScreen;
+    
+    [Tooltip("Độ mờ tối đa khi nhá máu (1 là rõ nhất, 0.5 là hơi mờ)")]
+    public float maxAlpha = 1f;
+    public float flashSpeed = 5f;
 
     private Soldier player;
+    private bool isFlashing = false;
+    private float previousHealth;
 
     private void Start()
     {
-        // Tìm player trong scene
         player = Object.FindAnyObjectByType<Soldier>();
 
         if (player != null && healthSlider != null)
         {
-            // Cài đặt giá trị ban đầu cho Slider
             healthSlider.maxValue = player.maxHealth;
-            healthSlider.value = player.maxHealth; // Lúc mới vào thì máu đầy
+            healthSlider.value = player.maxHealth; 
+            previousHealth = player.maxHealth;
 
-            // Đăng ký sự kiện: Khi Player bị trừ máu, tự động gọi hàm UpdateHealthUI
+            if (bloodScreen != null)
+            {
+                Color c = bloodScreen.color;
+                c.a = 0f;
+                bloodScreen.color = c;
+                bloodScreen.gameObject.SetActive(false);
+            }
+
+
             player.OnHealthChanged += UpdateHealthUI;
         }
     }
 
     private void OnDestroy()
     {
-        // Nhớ huỷ đăng ký sự kiện khi object bị xoá để tránh lỗi bộ nhớ (Memory Leak)
         if (player != null)
         {
             player.OnHealthChanged -= UpdateHealthUI;
         }
     }
 
-    // Hàm này sẽ tự động chạy mỗi khi máu bị trừ hoặc được hồi
     private void UpdateHealthUI(float currentHealth, float maxHealth)
     {
         if (healthSlider != null)
         {
             healthSlider.value = currentHealth;
+        }
+
+        if (currentHealth < previousHealth && bloodScreen != null)
+        {
+            isFlashing = true;
+            bloodScreen.gameObject.SetActive(true);
+        }
+        previousHealth = currentHealth;
+    }
+
+    private void Update()
+    {
+        if (bloodScreen != null && bloodScreen.gameObject.activeSelf)
+        {
+            if (isFlashing)
+            {
+                Color c = bloodScreen.color;
+                c.a = maxAlpha;
+                bloodScreen.color = c;
+                isFlashing = false; 
+            }
+            else
+            {
+                Color c = bloodScreen.color;
+                c.a = Mathf.Lerp(c.a, 0f, flashSpeed * Time.deltaTime);
+                bloodScreen.color = c;
+
+                if (bloodScreen.color.a <= 0.01f)
+                {
+                    c.a = 0f;
+                    bloodScreen.color = c;
+                    bloodScreen.gameObject.SetActive(false);
+                }
+            }
         }
     }
 }

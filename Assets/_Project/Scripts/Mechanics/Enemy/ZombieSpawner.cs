@@ -5,25 +5,31 @@ public class ZombieSpawner : MonoBehaviour
 {
     [Header("Spawn Settings")]
     public string zombiePoolTag = "Zombie";
-    public float initialSpawnInterval = 2f;
-    public float spawnDistance = 20f; // Khoảng cách spawn tính từ player (đảm bảo ngoài màn hình)
+    public string bossPoolTag = "GiantZombie"; 
+    public float initialSpawnInterval = 1.5f; 
+    public float spawnDistance = 20f; 
 
     [Header("Rhythm / Difficulty")]
-    public float minSpawnInterval = 0.5f; // Tốc độ spawn nhanh nhất (dồn dập)
-    public float timeToMaxDifficulty = 180f; // Thời gian đạt tốc độ nhanh nhất (VD: 3 phút)
+    public float minSpawnInterval = 0.3f; 
+    public float timeToMaxDifficulty = 180f; 
+    
+    [Header("Boss Settings")]
+    public bool enableBoss = false; 
+    public float timeToSpawnBoss = 15f; 
     
     private float currentSpawnInterval;
     private float gameTimer;
 
     private float spawnTimer;
     private Transform playerTransform;
+    
+    private bool hasSpawnedBoss = false;
 
     private void Start()
     {
         currentSpawnInterval = initialSpawnInterval;
         gameTimer = 0f;
         
-        // Tìm player để spawn xung quanh
         Soldier player = Object.FindAnyObjectByType<Soldier>();
         if (player != null)
         {
@@ -36,10 +42,15 @@ public class ZombieSpawner : MonoBehaviour
         if (playerTransform == null) return;
         if (GameManager.HasInstance && GameManager.Instance.CurrentState != GameState.Playing) return;
 
-        // Tăng dần độ khó (nhịp điệu dồn dập hơn theo thời gian)
         gameTimer += Time.deltaTime;
         float difficultyPercent = Mathf.Clamp01(gameTimer / timeToMaxDifficulty);
         currentSpawnInterval = Mathf.Lerp(initialSpawnInterval, minSpawnInterval, difficultyPercent);
+
+        if (enableBoss && !hasSpawnedBoss && gameTimer >= timeToSpawnBoss)
+        {
+            hasSpawnedBoss = true;
+            SpawnBoss();
+        }
 
         spawnTimer += Time.deltaTime;
         if (spawnTimer >= currentSpawnInterval)
@@ -51,9 +62,8 @@ public class ZombieSpawner : MonoBehaviour
 
     private void SpawnZombie()
     {
-        // Balance: Tăng số lượng quái sinh ra mỗi nhịp theo thời gian (từ 1 đến 3 con)
         float difficultyPercent = Mathf.Clamp01(gameTimer / timeToMaxDifficulty);
-        int spawnCount = Mathf.FloorToInt(Mathf.Lerp(1, 3, difficultyPercent));
+        int spawnCount = Mathf.FloorToInt(Mathf.Lerp(1, 4, difficultyPercent));
         int spawned = 0;
 
         for (int i = 0; i < 20; i++)
@@ -72,17 +82,13 @@ public class ZombieSpawner : MonoBehaviour
             }
 
             Vector3 randomPos = playerTransform.position + spawnOffset;
-            // Ép toạ độ Y ngang với Player ban đầu để ưu tiên quét mặt đất
             randomPos.y = playerTransform.position.y; 
 
-            // Quét tìm điểm NavMesh gần nhất trong vòng 10m
             if (NavMesh.SamplePosition(randomPos, out NavMeshHit hit, 10f, NavMesh.AllAreas))
             {
-                // Kỹ thuật chốt chặn: Thử vẽ đường đi từ điểm đó tới Player
                 NavMeshPath path = new NavMeshPath();
                 if (NavMesh.CalculatePath(hit.position, playerTransform.position, NavMesh.AllAreas, path))
                 {
-                    // Nếu đường đi thông suốt (PathComplete), nghĩa là không bị kẹt trên nóc nhà
                     if (path.status == NavMeshPathStatus.PathComplete)
                     {
                         GameObject zombieObj = ObjectPooler.Instance.SpawnFromPool(zombiePoolTag, hit.position, Quaternion.identity);
@@ -99,6 +105,29 @@ public class ZombieSpawner : MonoBehaviour
                     }
                 }
             }
+        }
+    }
+
+    private void SpawnBoss()
+    {
+        Debug.Log("[ZombieSpawner] Bắt đầu gọi SpawnBoss! Đang thả Boss...");
+        
+        Vector3 spawnOffset = new Vector3(8f, 0, 8f); 
+        Vector3 randomPos = playerTransform.position + spawnOffset;
+        randomPos.y = playerTransform.position.y;
+
+        GameObject bossObj = ObjectPooler.Instance.SpawnFromPool(bossPoolTag, randomPos, Quaternion.identity);
+        if (bossObj != null)
+        {
+            Debug.Log("[ZombieSpawner] Đã thả Boss thành công ra mặt đất!");
+            Zombie boss = bossObj.GetComponent<Zombie>();
+            if (boss != null) boss.Revive();
+        }
+        else
+        {
+            string allTags = "";
+            foreach (var key in ObjectPooler.Instance.poolDictionary.Keys) allTags += "'" + key + "' ";
+            Debug.LogError("[ZombieSpawner] LỖI: Không tìm thấy Boss. Pool Tag đang tìm: '" + bossPoolTag + "'. Các Tag có sẵn: " + allTags);
         }
     }
 }

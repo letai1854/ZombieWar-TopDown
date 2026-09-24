@@ -36,12 +36,49 @@ public class ObjectPooler : Singleton<ObjectPooler>
     {
         if (!poolDictionary.ContainsKey(tag)) return null;
 
-        GameObject objectToSpawn = poolDictionary[tag].Dequeue();
+        Queue<GameObject> queue = poolDictionary[tag];
+        GameObject objectToSpawn = queue.Dequeue();
+
+        // Khắc phục lỗi lôi vật thể đang dùng ra chỗ khác: 
+        // Nếu object lấy ra VẪN ĐANG ACTIVE (tức là nó đang được xài trên Scene)
+        if (objectToSpawn.activeInHierarchy)
+        {
+            // 1. Trả nó lại vào cuối hàng chờ để nó không bị mất tích trên Scene
+            queue.Enqueue(objectToSpawn);
+
+            // 2. Tự động đẻ thêm 1 bản sao mới toanh vì kho đã cạn
+            Pool poolDef = pools.Find(p => p.tag == tag);
+            if (poolDef != null)
+            {
+                objectToSpawn = Instantiate(poolDef.prefab, transform);
+            }
+            else
+            {
+                return null; // Phòng hờ lỗi nếu không tìm thấy gốc
+            }
+        }
+
         objectToSpawn.transform.position = position;
         objectToSpawn.transform.rotation = rotation;
         objectToSpawn.SetActive(true);
 
-        poolDictionary[tag].Enqueue(objectToSpawn);
+        // Đưa object này vào cuối hàng chờ để xoay vòng cho các lần sau
+        queue.Enqueue(objectToSpawn);
         return objectToSpawn;
+    }
+
+    // Đưa Object về Pool (Tắt đi) sau một khoảng thời gian
+    public void ReturnToPool(GameObject obj, float delay)
+    {
+        if (obj != null && gameObject.activeInHierarchy)
+        {
+            StartCoroutine(ReturnRoutine(obj, delay));
+        }
+    }
+
+    private System.Collections.IEnumerator ReturnRoutine(GameObject obj, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (obj != null) obj.SetActive(false);
     }
 }

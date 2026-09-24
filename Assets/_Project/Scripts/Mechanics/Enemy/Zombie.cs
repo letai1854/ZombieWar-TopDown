@@ -18,11 +18,13 @@ public class Zombie : Entity
     [Header("Zombie Settings")]
     public float detectionRadius = 100f;
     public float attackRange = 1.5f;
-    public float attackDamage = 10f;
+    public float attackDamage = 25f;
     public float maxHealth = 100f;
     
     private float currentHealth;
     public bool IsDead => currentHealth <= 0;
+
+    public float ActualAttackRange => attackRange * transform.localScale.x;
 
     protected override void Awake()
     {
@@ -47,10 +49,9 @@ public class Zombie : Entity
     private void Start()
     {
         currentHealth = maxHealth;
-        // Balance: random tốc độ để quái ép góc người chơi (không thể chỉ chạy trốn 1 mạch)
         Agent.speed = moveSpeed * Random.Range(0.8f, 1.4f); 
         
-        Agent.stoppingDistance = attackRange * 0.8f;
+        Agent.stoppingDistance = ActualAttackRange * 0.8f;
 
         if (TargetPlayer == null)
         {
@@ -66,7 +67,7 @@ public class Zombie : Entity
 
     protected override void Update()
     {
-        Agent.stoppingDistance = attackRange * 0.8f;
+        Agent.stoppingDistance = ActualAttackRange * 0.8f;
 
         if (StateMachine.CurrentState != null)
         {
@@ -98,28 +99,44 @@ public class Zombie : Entity
         if (IsDead) return;
 
         currentHealth -= amount;
+        Debug.Log($"[{gameObject.name}] Đã trúng đạn! Máu còn: {currentHealth}");
         
-        // Gọi hiệu ứng Hit Flash
         if (effects != null) effects.TriggerHitFlash();
+
+        if (ObjectPooler.HasInstance)
+        {
+            float chestHeight = 1f * transform.localScale.y; 
+            Vector3 chestPosition = transform.position + Vector3.up * chestHeight + transform.forward * (0.1f * transform.localScale.z);
+            
+            GameObject bloodVFX = ObjectPooler.Instance.SpawnFromPool("BloodVFX", chestPosition, Quaternion.LookRotation(Vector3.up));
+            
+            if (bloodVFX != null)
+            {
+                Debug.Log($"[{gameObject.name}] Đã spawn thành công BloodVFX tại {chestPosition}!");
+                bloodVFX.transform.localScale = Vector3.one * transform.localScale.x;
+                ObjectPooler.Instance.ReturnToPool(bloodVFX, 1.5f);
+            }
+            else
+            {
+                Debug.LogError($"[{gameObject.name}] KHÔNG TÌM THẤY 'BloodVFX' trong ObjectPooler! Bạn hãy kiểm tra lại danh sách Pool trên Manager!");
+            }
+        }
 
         if (currentHealth <= 0)
         {
             if (SoundManager.HasInstance) SoundManager.Instance.PlayZombieDead();
             StateMachine.ChangeState(DeadState);
-            // Gọi hiệu ứng Dissolve
             if (effects != null) effects.TriggerDissolve();
         }
     }
 
-    // Hàm này được gọi từ Unity Animation Event (vào đúng frame Zombie cào trúng)
     public void DealDamageEvent()
     {
         if (IsDead || TargetPlayer == null) return;
         
         if (SoundManager.HasInstance) SoundManager.Instance.PlayZombieAttack();
 
-        // Chỉ gây damage nếu Player vẫn nằm trong tầm cào
-        if (GetDistanceToPlayer() <= attackRange * 1.5f) // Dư dả một chút để đánh dễ trúng
+        if (GetDistanceToPlayer() <= ActualAttackRange * 1.5f) 
         {
             Soldier soldier = TargetPlayer.GetComponent<Soldier>();
             if (soldier != null)
@@ -129,17 +146,19 @@ public class Zombie : Entity
         }
     }
 
-    // Được gọi bởi ObjectPool khi tái sử dụng Zombie
     public void Revive()
     {
         currentHealth = maxHealth;
         if (Controller != null) Controller.enabled = false;
         Agent.enabled = true;
         
-        // Balance: random lại tốc độ mỗi lần hồi sinh
+        if (Agent.isActiveAndEnabled)
+        {
+            Agent.Warp(transform.position);
+        }
+
         Agent.speed = moveSpeed * Random.Range(0.8f, 1.4f);
 
-        // Khôi phục Layer và bật lại Collider
         gameObject.layer = LayerMask.NameToLayer("Enemy");
         Collider[] cols = GetComponentsInChildren<Collider>();
         foreach (Collider c in cols)
@@ -149,7 +168,6 @@ public class Zombie : Entity
         
         if (effects != null) effects.ResetEffects();
 
-        // Đảm bảo luôn lấy được mục tiêu khi revive
         if (TargetPlayer == null)
         {
             Soldier soldier = Object.FindAnyObjectByType<Soldier>();
