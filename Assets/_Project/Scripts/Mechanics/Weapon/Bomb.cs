@@ -33,7 +33,6 @@ public class Bomb : MonoBehaviour
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
-            // Bật Continuous Dynamic để chống lỗi xuyên vật thể khi bay nhanh (đặc biệt là mặt dốc hẹp)
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
