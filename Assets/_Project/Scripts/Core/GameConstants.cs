@@ -5,6 +5,8 @@ public static class GameConstants
     public static class Shaders
     {
         public const string SpritesDefault = "Sprites/Default";
+        public static readonly int HitFlash = Shader.PropertyToID("_HitFlash");
+        public static readonly int DissolveAmount = Shader.PropertyToID("_DissolveAmount");
     }
 
     public static class Tags

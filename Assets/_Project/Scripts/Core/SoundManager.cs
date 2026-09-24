@@ -18,7 +18,7 @@ public class SoundManager : BaseManager<SoundManager>
     public AudioClip zombieDeadSFX;
     public AudioClip buttonClickSFX;
     [Header("Bomb UI/Ticking")]
-    public AudioClip bombTickSFX; // Tiếng đếm ngược của bom
+    public AudioClip bombTickSFX; 
 
     protected override void Awake()
     {
@@ -41,7 +41,7 @@ public class SoundManager : BaseManager<SoundManager>
     public void PlayBGM(AudioClip clip)
     {
         if (clip == null || bgmSource == null) return;
-        if (bgmSource.clip == clip) return; // Không phát lại nếu đang hát bài này
+        if (bgmSource.clip == clip) return; 
         
         bgmSource.clip = clip;
         bgmSource.Play();
@@ -49,12 +49,10 @@ public class SoundManager : BaseManager<SoundManager>
 
     public void PlaySFX(AudioClip clip)
     {
-        if (clip == null || sfxSource == null) return;
-        // Dùng PlayOneShot để âm thanh có thể đè lên nhau (ví dụ xả đạn liên tục)
+        if (clip == null || sfxSource == null)  return;
         sfxSource.PlayOneShot(clip);
     }
 
-    // Các hàm tiện ích gọi nhanh từ các file khác
     public void PlayRifleShot() => PlaySFX(rifleShotSFX);
     public void PlayShotgunShot() => PlaySFX(shotgunShotSFX);
     public void PlayBombExplosion() => PlaySFX(bombExplosionSFX);
