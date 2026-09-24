@@ -13,11 +13,10 @@ public class ZombieEffects : MonoBehaviour
 
     public void TriggerHitFlash()
     {
-        // Quét lại toàn bộ lưới mỗi lần bắn trúng để đảm bảo KHÔNG THỂ trượt bất kỳ lưới nào (dù nó được load sau)
         renderers = GetComponentsInChildren<Renderer>(true);
         if (renderers == null || renderers.Length == 0)
         {
-            Debug.LogError($"[ZombieEffects] Không thể chớp trắng vì {gameObject.name} KHÔNG CÓ Renderer!");
+            Debug.LogError($"[ZombieEffects] Không chớp trắng vì {gameObject.name} KHÔNG CÓ Renderer!");
             return;
         }
         
@@ -30,24 +29,23 @@ public class ZombieEffects : MonoBehaviour
         float duration = 0.15f;
         float elapsed = 0f;
 
-        // Báo log để chứng minh Code đã gọi chớp trắng
         Debug.Log($"[ZombieEffects] Đang chớp trắng cho {gameObject.name} trên {renderers.Length} meshes!");
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float intensity = 1f - (elapsed / duration); // Chạy từ 1 về 0
+            float intensity = 1f - (elapsed / duration);
             
-            SetProperty("_HitFlash", intensity);
+            SetProperty(GameConstants.Shaders.HitFlash, intensity);
             yield return null;
         }
 
-        SetProperty("_HitFlash", 0f);
+        SetProperty(GameConstants.Shaders.HitFlash, 0f);
     }
 
     public void TriggerDissolve()
     {
-        StopCoroutine(nameof(HitFlashRoutine)); // Ngừng chớp sáng nếu đang chết
+        StopCoroutine(nameof(HitFlashRoutine)); 
         StartCoroutine(DissolveRoutine());
     }
 
@@ -59,25 +57,24 @@ public class ZombieEffects : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float amount = elapsed / duration; // Chạy từ 0 đến 1
+            float amount = elapsed / duration; 
             
-            SetProperty("_DissolveAmount", amount);
+            SetProperty(GameConstants.Shaders.DissolveAmount, amount);
             yield return null;
         }
 
-        SetProperty("_DissolveAmount", 1f);
+        SetProperty(GameConstants.Shaders.DissolveAmount, 1f);
         
-        // Sau khi tan biến xong, ẩn Zombie đi (cho ObjectPool)
         gameObject.SetActive(false);
     }
 
     public void ResetEffects()
     {
-        SetProperty("_HitFlash", 0f);
-        SetProperty("_DissolveAmount", 0f);
+        SetProperty(GameConstants.Shaders.HitFlash, 0f);
+        SetProperty(GameConstants.Shaders.DissolveAmount, 0f);
     }
 
-    private void SetProperty(string propName, float value)
+    private void SetProperty(int propID, float value)
     {
         if (renderers == null || renderers.Length == 0)
         {
@@ -89,7 +86,7 @@ public class ZombieEffects : MonoBehaviour
         foreach (var r in renderers)
         {
             r.GetPropertyBlock(propBlock);
-            propBlock.SetFloat(propName, value);
+            propBlock.SetFloat(propID, value);
             r.SetPropertyBlock(propBlock);
         }
     }
