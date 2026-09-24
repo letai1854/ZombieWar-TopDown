@@ -34,18 +34,15 @@ public class AutoShooter : MonoBehaviour
 
     private void Update()
     {
-        // Nếu đang ném bom thì tuyệt đối KHÔNG quét quái và KHÔNG bắn đạn
         if (soldier != null && soldier.IsThrowingBomb) return;
 
         FindClosestEnemyInFOV();
         
-        // CẬP NHẬT GÓC XOAY NGAY TRONG UPDATE ĐỂ TRÁNH TRỄ 1 FRAME
         UpdateTargetYaw(); 
 
         if (currentTarget != null)
         {
-            // CHỈ BẮN KHI ĐÃ XOAY XONG VÀ HƯỚNG MẶT ĐÃ KHỚP (Sai số góc <= 2 độ)
-            // Fix triệt để lỗi viên đạn đầu tiên bay ra trước khi mặt kịp quay
+           
             if (Mathf.Abs(targetSpineYaw - currentSpineYaw) <= 2f)
             {
                 if (weaponManager != null)
@@ -58,7 +55,6 @@ public class AutoShooter : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Áp dụng góc xoay vào xương trong LateUpdate để không bị Animator ghi đè
         if (spineBone != null && Mathf.Abs(currentSpineYaw) > 0.1f)
         {
             spineBone.rotation = Quaternion.AngleAxis(currentSpineYaw, Vector3.up) * spineBone.rotation;
@@ -135,4 +131,5 @@ public class AutoShooter : MonoBehaviour
         Gizmos.DrawLine(transform.position, transform.position + leftBoundary);
         Gizmos.DrawLine(transform.position, transform.position + rightBoundary);
     }
+    
 }
